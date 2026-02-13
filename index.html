@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Our Love Puzzle ❤️</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+
+/* BACKGROUND */
+
+body{
+margin:0;
+font-family:'Poppins',sans-serif;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(-45deg,#ffd6e7,#ffe3f1,#ffc2d1,#ffd1dc);
+background-size:400% 400%;
+animation:gradientMove 12s ease infinite;
+}
+
+@keyframes gradientMove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+/* CARD */
+
+.card{
+width:92%;
+max-width:750px;
+padding:45px;
+border-radius:30px;
+text-align:center;
+background:rgba(255,255,255,.35);
+backdrop-filter:blur(25px);
+box-shadow:0 15px 60px rgba(255,105,180,.25);
+}
+
+/* SCREENS */
+
+.screen{
+display:none;
+animation:fade .8s ease;
+}
+
+.active{
+display:block;
+}
+
+@keyframes fade{
+from{opacity:0; transform:translateY(15px);}
+to{opacity:1;}
+}
+
+/* BUTTON */
+
+button{
+padding:14px 28px;
+border:none;
+border-radius:30px;
+background:#ff4d88;
+color:white;
+font-size:16px;
+cursor:pointer;
+margin-top:20px;
+transition:.3s;
+}
+
+button:hover{
+transform:scale(1.05);
+}
+
+/* GRID */
+
+.grid{
+display:grid;
+grid-template-columns:repeat(12,34px);
+gap:5px;
+justify-content:center;
+margin:25px 0;
+}
+
+.cell{
+width:34px;
+height:34px;
+background:#ffe5ec;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:8px;
+cursor:pointer;
+font-weight:600;
+}
+
+.cell.selected{
+background:#ff4d6d;
+color:white;
+}
+
+/* HEARTS */
+
+.heart{
+position:fixed;
+top:-10px;
+font-size:22px;
+animation:fall 4s linear forwards;
+}
+
+@keyframes fall{
+to{transform:translateY(110vh);}
+}
+
+/* MEMORY GAME */
+
+.memory-grid{
+display:grid;
+grid-template-columns:repeat(4,75px);
+gap:12px;
+justify-content:center;
+margin-top:25px;
+}
+
+.memory-card{
+width:75px;
+height:75px;
+position:relative;
+transform-style:preserve-3d;
+transition:transform .4s;
+cursor:pointer;
+}
+
+.memory-card.flip{
+transform:rotateY(180deg);
+}
+
+.front,.back{
+position:absolute;
+width:100%;
+height:100%;
+border-radius:12px;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:26px;
+backface-visibility:hidden;
+}
+
+.front{
+background:#ff4d6d;
+color:white;
+}
+
+.back{
+background:white;
+transform:rotateY(180deg);
+}
+
+/* BIG LADDU MESSAGE */
+
+#ladduMessage{
+font-size:42px;
+animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+0%{transform:scale(1);}
+50%{transform:scale(1.08);}
+100%{transform:scale(1);}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- AUTOPLAY MUSIC -->
+
+<audio id="loveSong" autoplay loop>
+<source src="song.mp3" type="audio/mpeg">
+</audio>
+
+<div class="card">
+
+<!-- INTRO -->
+
+<div id="intro" class="screen active">
+<h1>Before I ask you something important... ❤️</h1>
+<p>Let's test your IQ first 😌</p>
+<button onclick="show('gameMenu')">Start</button>
+</div>
+
+<!-- GAME MENU -->
+
+<div id="gameMenu" class="screen">
+<h1>Let's Test Your IQ 😌❤️</h1>
+<p>Finish both games to unlock the surprise...</p>
+
+<button onclick="startPuzzle()">🧠 Love Puzzle</button><br> <button onclick="startMemory()">💘 Memory Test</button>
+
+<br><br>
+
+<button id="timelineBtn"
+onclick="startTimeline()"
+style="background:#ccc;cursor:not-allowed;"
+disabled>
+Unlock Timeline ❤️ </button>
+
+</div>
+
+<!-- PUZZLE -->
+
+<div id="puzzle" class="screen">
+<h2>Find the missing words 🧠❤️</h2>
+<div id="questions"></div>
+<div class="grid" id="grid"></div>
+<p id="msg"></p>
+<button onclick="show('gameMenu')">← Back</button>
+</div>
+
+<!-- MEMORY GAME -->
+
+<div id="memory" class="screen">
+<h2>Match the pieces of my heart ❤️</h2>
+<div class="memory-grid" id="memoryGrid"></div>
+
+<p style="color:#c9184a;">
+<span id="moves">Moves: 0</span> |
+<span id="matches">Matches: 0/8</span>
+</p>
+
+<button onclick="show('gameMenu')">← Back</button>
+
+</div>
+
+<!-- TIMELINE -->
+
+<div id="timeline" class="screen">
+<h1>Every phase with you mattered ❤️</h1>
+
+<div id="timelineText"
+style="margin-top:30px;font-size:18px;line-height:1.8;color:#c9184a;">
+</div>
+
+<h2 id="daysCounter"></h2>
+
+<button onclick="show('final')">Continue ❤️</button>
+
+</div>
+
+<!-- FINAL -->
+
+<div id="final" class="screen">
+<h1>
+You remembered every little detail… ❤️  
+<br><br>
+Will you be my Long Distance Valentine?
+</h1>
+
+<button onclick="celebrate()">YES 😍</button> <button id="noBtn" onmouseover="runAway()">NO 😜</button>
+
+<br><br>
+
+<button onclick="showReasons()" style="background:white;color:#ff4d88;">
+Reasons I Love You ❤️
+</button>
+
+<p id="reasonsBox"
+style="display:none;margin-top:20px;font-size:18px;color:#c9184a;line-height:1.8;">
+</p>
+</div>
+
+<!-- FINAL PROPOSAL -->
+
+<div id="proposalMessage" class="screen">
+
+<h1 style="color:#c9184a;">One Last Thing... ❤️</h1>
+
+<p id="proposalText"
+style="margin-top:25px;font-size:20px;line-height:1.9;color:#c9184a;">
+</p>
+
+<div id="proposalButtons" style="display:none;margin-top:30px;">
+<button onclick="finalYes()">YES, FOREVER ❤️</button>
+<button onclick="finalNo()" id="finalNoBtn">NO 😜</button>
+</div>
+
+<p id="noMessage"
+style="
+color:#c9184a;
+margin-top:15px;
+font-weight:500;
+height:24px;
+">
+</p>
+
+
+<h1 id="ladduMessage"
+style="display:none;margin-top:30px;color:#c9184a;">
+I LOVE YOU LADDU 💖
+</h1>
+
+</div>
+
+</div>
+
+<script>
+
+const entered = prompt("Enter the date our story began ❤️");
+
+if(entered !== "1209"){   // CHANGE PASSWORD HERE
+
+document.body.innerHTML = `
+<div style="
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+font-family:Poppins;
+background:linear-gradient(45deg,#ffd6e7,#ffc2d1);
+">
+
+<h1>This memory is only for someone special ❤️</h1>
+
+</div>
+`;
+
+}
+
+/* FIX AUTOPLAY (for mobile & chrome restrictions) */
+document.addEventListener("click",()=>{
+document.getElementById("loveSong").play().catch(()=>{});
+},{once:true});
+
+/* SCREEN SWITCH */
+
+function show(id){
+document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+
+/* GAME TRACKER */
+
+let puzzleDone=false;
+let memoryDone=false;
+
+function unlockTimeline(){
+if(puzzleDone && memoryDone){
+const btn=document.getElementById("timelineBtn");
+btn.disabled=false;
+btn.style.background="#ff4d88";
+btn.style.cursor="pointer";
+btn.innerText="Continue to Timeline ❤️";
+}
+}
+
+/* ================= PUZZLE ================= */
+
+const puzzleData=[
+
+{
+q:"Where we met for the first ________?",
+a:"SHAKEMAKER",
+hint:"🥤 Where milkshakes taste better when you're together 😉"
+},
+
+{
+q:"Hardi's favourite color is ________?",
+a:"WHITE",
+hint:"🤍 The color that looks calm… just like my love for you."
+},
+
+{
+q:"Hardi's comfort person is ________?",
+a:"ME",
+hint:"😌 The one reading this right now."
+},
+
+{
+q:"You first became friends with my ________?",
+a:"SISTER",
+hint:"👭 Someone who liked you before me."
+},
+
+{
+q:"We officially became 'US' in ________ standard?",
+a:"ELEVENTH",
+hint:"🎓 Teenage love era."
+}
+
+];
+
+
+const size=12;
+const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+let grid=[];
+let isDragging=false;
+let startCell=null;
+let selectedCells=[];
+let found=0;
+
+function startPuzzle(){
+found=0;
+show("puzzle");
+generateGrid();
+drawQuestions();
+}
+
+function generateGrid(){
+grid = Array.from({length:size},()=>Array(size).fill(""));
+const dirs=[[0,1],[1,0],[0,-1],[-1,0]];
+
+puzzleData.forEach(item=>{
+let placed=false;
+
+while(!placed){
+let dir=dirs[Math.floor(Math.random()*dirs.length)];
+let row=Math.floor(Math.random()*size);
+let col=Math.floor(Math.random()*size);
+
+let endRow=row+dir[0]*(item.a.length-1);
+let endCol=col+dir[1]*(item.a.length-1);
+
+if(endRow<0||endRow>=size||endCol<0||endCol>=size) continue;
+
+let fits=true;
+
+for(let i=0;i<item.a.length;i++){
+let r=row+dir[0]*i;
+let c=col+dir[1]*i;
+if(grid[r][c]!=="" && grid[r][c]!==item.a[i]) fits=false;
+}
+
+if(!fits) continue;
+
+for(let i=0;i<item.a.length;i++){
+let r=row+dir[0]*i;
+let c=col+dir[1]*i;
+grid[r][c]=item.a[i];
+}
+
+placed=true;
+}
+});
+
+for(let r=0;r<size;r++){
+for(let c=0;c<size;c++){
+if(grid[r][c]===""){
+grid[r][c]=letters[Math.floor(Math.random()*26)];
+}
+}
+}
+
+drawGrid();
+}
+
+function drawGrid(){
+
+const g=document.getElementById("grid");
+g.innerHTML="";
+
+grid.forEach((row,r)=>{
+row.forEach((letter,c)=>{
+
+let cell=document.createElement("div");
+cell.className="cell";
+cell.innerText=letter;
+cell.dataset.row=r;
+cell.dataset.col=c;
+
+cell.onmousedown=()=>{
+clearTemp();
+isDragging=true;
+startCell=cell;
+highlightLine(cell);
+};
+
+cell.onmouseenter=()=>{
+if(isDragging){
+highlightLine(cell);
+}
+};
+
+document.onmouseup=()=>{
+if(isDragging){
+isDragging=false;
+checkWord();
+}
+};
+
+g.appendChild(cell);
+});
+});
+}
+
+function highlightLine(endCell){
+
+clearTemp();
+
+let r1=parseInt(startCell.dataset.row);
+let c1=parseInt(startCell.dataset.col);
+let r2=parseInt(endCell.dataset.row);
+let c2=parseInt(endCell.dataset.col);
+
+if(!(r1===r2 || c1===c2)) return;
+
+let dr=Math.sign(r2-r1);
+let dc=Math.sign(c2-c1);
+
+let r=r1;
+let c=c1;
+selectedCells=[];
+
+while(true){
+
+let cell=document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+
+if(!cell) break;
+
+cell.classList.add("selected");
+selectedCells.push(cell);
+
+if(r===r2 && c===c2) break;
+
+r+=dr;
+c+=dc;
+}
+}
+
+function clearTemp(){
+document.querySelectorAll(".cell.selected")
+.forEach(c=>c.classList.remove("selected"));
+}
+
+function drawQuestions(){
+
+const qDiv=document.getElementById("questions");
+qDiv.innerHTML="";
+
+puzzleData.forEach((item,index)=>{
+qDiv.innerHTML+=`
+<p>${item.q} <b id='w-${item.a}'>_____</b></p>
+<span style="cursor:pointer;color:#ff4d88;font-size:14px;"
+onclick="toggleHint(${index})">💡 Need a hint?</span>
+<p id="hint-${index}" 
+style="display:none;font-size:14px;color:#c9184a;">
+${item.hint}
+</p>
+
+
+`;
+});
+}
+
+function toggleHint(i){
+let h=document.getElementById("hint-"+i);
+h.style.display = h.style.display==="none" ? "block" : "none";
+}
+
+function checkWord(){
+
+let formed=selectedCells.map(c=>c.innerText).join("");
+let reverse=formed.split("").reverse().join("");
+
+puzzleData.forEach(item=>{
+if(formed===item.a || reverse===item.a){
+
+document.getElementById("w-"+item.a).innerText=item.a;
+
+selectedCells.forEach(c=>{
+c.style.background="#c9184a";
+c.style.color="white";
+});
+
+found++;
+
+if(found===puzzleData.length){
+document.getElementById("msg").innerText="You remember us perfectly ❤️";
+puzzleDone=true;
+unlockTimeline();
+}
+}
+});
+
+selectedCells=[];
+}
+
+/* ================= MEMORY GAME ================= */
+
+const emojis=["❤️","😍","🥰","💋","🌹","💌","💍","🫶"];
+let memoryCards=[...emojis,...emojis];
+let flipped=[];
+let lock=false;
+let moves=0;
+let matchCount=0;
+
+function startMemory(){
+
+show("memory");
+
+const grid=document.getElementById("memoryGrid");
+grid.innerHTML="";
+
+memoryCards.sort(()=>Math.random()-.5);
+
+flipped=[];
+lock=false;
+moves=0;
+matchCount=0;
+updateMemoryStats();
+
+memoryCards.forEach(emoji=>{
+
+let card=document.createElement("div");
+card.className="memory-card";
+
+card.innerHTML=`
+<div class="front">?</div>
+<div class="back">${emoji}</div>
+`;
+
+card.onclick=()=>flipCard(card,emoji);
+
+grid.appendChild(card);
+});
+}
+
+function flipCard(card,emoji){
+
+if(lock || card.classList.contains("flip")) return;
+
+card.classList.add("flip");
+flipped.push({card,emoji});
+
+if(flipped.length===2){
+
+moves++;
+updateMemoryStats();
+
+if(flipped[0].emoji===flipped[1].emoji){
+
+matchCount++;
+updateMemoryStats();
+flipped=[];
+
+if(matchCount===8){
+memoryDone=true;
+unlockTimeline();
+}
+
+}else{
+
+lock=true;
+
+setTimeout(()=>{
+flipped.forEach(f=>f.card.classList.remove("flip"));
+flipped=[];
+lock=false;
+},700);
+}
+}
+}
+
+function updateMemoryStats(){
+document.getElementById("moves").innerText="Moves: "+moves;
+document.getElementById("matches").innerText="Matches: "+matchCount+"/8";
+}
+
+/* ================= TIMELINE ================= */
+
+const timelineLines=[
+"You noticed me first… 👀",
+"You stayed even when I said no…",
+"You waited without giving up.",
+"Somewhere in that silence… I realized your value.",
+"And in 11th standard… we became US ❤️",
+"I didn’t just make this website… I relived every memory while building it."
+];
+
+function startTimeline(){
+
+show("timeline");
+
+let i=0;
+
+(function type(){
+if(i<timelineLines.length){
+document.getElementById("timelineText").innerHTML+=timelineLines[i]+"<br><br>";
+i++;
+setTimeout(type,1500);
+}
+})();
+
+calculateDays();
+}
+
+function calculateDays(){
+
+const startDate = new Date("2022-06-01");
+const today = new Date();
+const diff = today - startDate;
+const days = Math.floor(diff/(1000*60*60*24));
+
+document.getElementById("daysCounter").innerHTML =
+"It has been <b>"+days+" days</b> of loving you ❤️";
+}
+
+/* FINAL */
+
+function runAway(){
+let btn=document.getElementById("noBtn");
+btn.style.position="absolute";
+btn.style.left=Math.random()*400+"px";
+btn.style.top=Math.random()*400+"px";
+}
+
+function celebrate(){
+
+for(let i=0;i<120;i++){
+let heart=document.createElement("div");
+heart.innerHTML="❤️";
+heart.className="heart";
+heart.style.left=Math.random()*100+"%";
+document.body.appendChild(heart);
+setTimeout(()=>heart.remove(),4000);
+}
+
+setTimeout(()=>{
+show("proposalMessage");
+typeProposal();
+},1200);
+}
+
+/* REASONS */
+
+const reasons=[
+"You waited for me… even when I didn’t realise your importance.",
+"You understand me in ways no one else does.",
+"You are my calm in every storm.",
+"You never gave up on us.",
+"You make distance feel smaller.",
+"You are my safest place.",
+"The way you care for me makes me fall again and again.",
+"You tolerate my moods… and that itself is true love 😌",
+"You listen to my endless talks without running away.",
+"You are the reason my screen time is so high 😂",
+"If I had to choose again… it would still be you.",
+"And out of everyone in this world… my heart chose you ❤️"
+];
+
+function showReasons(){
+
+const box=document.getElementById("reasonsBox");
+
+box.style.display="block";
+box.innerHTML="";
+
+let i=0;
+
+(function type(){
+if(i<reasons.length){
+box.innerHTML+="❤️ "+reasons[i]+"<br>";
+i++;
+setTimeout(type,600);
+}
+})();
+}
+
+/* LONG PROPOSAL */
+
+const proposalLines=[
+
+"Before you came into my life, everything felt normal… ordinary.",
+"But then you walked in — and became my favorite part of every day.",
+"You are not just someone I love…",
+"You are my peace after a long day.",
+"My safe place when the world feels heavy.",
+"My smile without a reason.",
+"With you… even silence feels beautiful.",
+"You taught me what it means to be cared for… to be chosen… to be loved gently.",
+"I want you in every chapter of my life.",
+"In my happy days… In my hardest moments… In every dream I dare to dream.",
+"I want to grow with you, laugh with you, and hold your hand through everything.",
+"Distance may test us… time may challenge us… but my heart has already chosen you.",
+"And if I had to fall in love again… I would still choose you.",
+"Again. And again. And again. ❤️",
+"So today… after every memory, every laugh, every moment…",
+"You are not just my love… You are my forever.",
+"Will you stay with me… today, tomorrow, and for all the beautiful days waiting for us? ❤️"
+
+];
+
+function typeProposal(){
+
+const box=document.getElementById("proposalText");
+box.innerHTML="";
+let i=0;
+
+(function type(){
+if(i<proposalLines.length){
+box.innerHTML+=proposalLines[i]+"<br><br>";
+i++;
+setTimeout(type,1200);
+}else{
+document.getElementById("proposalButtons").style.display="block";
+}
+})();
+}
+
+function finalYes(){
+
+document.getElementById("proposalButtons").style.display="none";
+document.getElementById("ladduMessage").style.display="block";
+
+for(let i=0;i<150;i++){
+let heart=document.createElement("div");
+heart.innerHTML="💖";
+heart.className="heart";
+heart.style.left=Math.random()*100+"%";
+document.body.appendChild(heart);
+setTimeout(()=>heart.remove(),4000);
+}
+}
+
+const noMsgs = [
+"Are you sure? 😭",
+"Think again... my heart is fragile 💔",
+"Don't break my heart like this 😢",
+"You clicked wrong 😌 try again",
+"Last chance… choose YES ❤️",
+"Running away won't change my love 😘",
+"Hehe 😜 you can't catch me!"
+];
+
+function finalNo(){
+
+let btn=document.getElementById("finalNoBtn");
+let msg=document.getElementById("noMessage");
+
+// random message
+msg.innerText = noMsgs[Math.floor(Math.random()*noMsgs.length)];
+
+// make button run
+btn.style.position="absolute";
+btn.style.left=Math.random()*70+"%";
+btn.style.top=Math.random()*70+"%";
+}
+
+
+</script>
+
+</body>
+</html>
